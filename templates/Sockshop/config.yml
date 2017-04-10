@@ -1,0 +1,5 @@
+name: Rancher CN CICD (Experimental)
+description: |
+  A POC project for CICD based on Rancher
+version: v0.0.1
+category: CI
