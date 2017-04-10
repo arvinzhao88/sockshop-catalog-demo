@@ -1,0 +1,40 @@
+version: '2'
+services:
+  core:
+    image: 192.168.100.194:80/cmbc/core
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+  ui:
+    image: 192.168.100.194:80/cmbc/ui
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+  lb:
+    image: 192.168.100.194:80/cmbc/lb-service-haproxy:v0.4.6
+    ports:
+    - 9090:9090/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+  jenkins:
+    image: 192.168.100.194:80/cmbc/jenkins:latest
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /usr/bin/docker:/usr/bin/docker
+  mysql:
+    image: 192.168.100.194:80/cmbc/mysql:8
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    stdin_open: true
+    tty: true
+    command:
+    - mysqld
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_unicode_ci
+    labels:
+      io.rancher.container.pull_image: always
+
