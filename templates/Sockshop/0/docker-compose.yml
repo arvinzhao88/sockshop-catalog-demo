@@ -1,40 +1,186 @@
 version: '2'
 services:
-  core:
-    image: 192.168.100.194:80/cmbc/core
-    stdin_open: true
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-  ui:
-    image: 192.168.100.194:80/cmbc/ui
-    stdin_open: true
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-  lb:
-    image: 192.168.100.194:80/cmbc/lb-service-haproxy:v0.4.6
+  zipkin:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    image: openzipkin/zipkin
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: zipkin
+    read_only: true
+    cap_drop:
+    - ALL
     ports:
-    - 9090:9090/tcp
-    labels:
-      io.rancher.container.agent.role: environmentAdmin
-      io.rancher.container.create_agent: 'true'
-  jenkins:
-    image: 192.168.100.194:80/cmbc/jenkins:latest
+    - 9411:9411/tcp
+  catalogue-db:
+    image: weaveworksdemos/catalogue-db
+    hostname: catalogue-db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_DATABASE: socksdb
+      MYSQL_ROOT_PASSWORD: ''
+  edge-router:
+    cap_add:
+    - NET_BIND_SERVICE
+    - CHOWN
+    - SETGID
+    - SETUID
+    - DAC_OVERRIDE
+    image: weaveworksdemos/edge-router
+    tmpfs:
+    - /var/run:rw,noexec,nosuid
+    hostname: edge-router
+    read_only: true
+    cap_drop:
+    - ALL
+    ports:
+    - 80:80/tcp
+    - 8080:8080/tcp
+  carts-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    image: mongo
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: carts-db
+    read_only: true
+    cap_drop:
+    - ALL
+  rabbitmq:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    - DAC_OVERRIDE
+    image: rabbitmq:3
+    hostname: rabbitmq
+    cap_drop:
+    - ALL
+  catalogue:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/catalogue
+    hostname: catalogue
+    environment:
+      ZIPKIN: http://zipkin:9411/api/v1/spans
+    read_only: true
+    cap_drop:
+    - ALL
+  orders-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    image: mongo
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: orders-db
+    read_only: true
+    cap_drop:
+    - ALL
+  queue-master:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/queue-master
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: queue-master
+    read_only: true
+    cap_drop:
+    - ALL
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - /usr/bin/docker:/usr/bin/docker
-  mysql:
-    image: 192.168.100.194:80/cmbc/mysql:8
+  carts:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/carts
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: carts
     environment:
-      MYSQL_DATABASE: test
-      MYSQL_ROOT_PASSWORD: my-secret-pw
-    stdin_open: true
-    tty: true
+      JAVA_OPTS: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+    read_only: true
+    cap_drop:
+    - ALL
+  shipping:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/shipping
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: shipping
+    environment:
+      JAVA_OPTS: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+    read_only: true
+    cap_drop:
+    - ALL
+  user-sim:
+    image: weaveworksdemos/load-test
+    hostname: user-simulator
+    read_only: true
+    cap_drop:
+    - ALL
     command:
-    - mysqld
-    - --character-set-server=utf8mb4
-    - --collation-server=utf8mb4_unicode_ci
-    labels:
-      io.rancher.container.pull_image: always
-
+    - -d
+    - '60'
+    - -r
+    - '200'
+    - -c
+    - '2'
+    - -h
+    - edge-router
+  user-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    image: weaveworksdemos/user-db
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: user-db
+    read_only: true
+    cap_drop:
+    - ALL
+  orders:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/orders
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    hostname: orders
+    environment:
+      JAVA_OPTS: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+    read_only: true
+    cap_drop:
+    - ALL
+  payment:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/payment
+    hostname: payment
+    environment:
+      ZIPKIN: http://zipkin:9411/api/v1/spans
+    read_only: true
+    cap_drop:
+    - ALL
+  front-end:
+    image: weaveworksdemos/front-end
+    hostname: front-end
+    read_only: true
+    cap_drop:
+    - ALL
+  user:
+    cap_add:
+    - NET_BIND_SERVICE
+    image: weaveworksdemos/user
+    hostname: user
+    environment:
+      MONGO_HOST: user-db:27017
+      ZIPKIN: http://zipkin:9411/api/v1/spans
+    read_only: true
+    cap_drop:
+    - ALL

@@ -1,5 +1,4 @@
-name: Rancher CN CICD (Experimental)
+name: Sock Shop (Experimental)
 description: |
-  A POC project for CICD based on Rancher
+  A Microservice Demo Application on Rancher
 version: v0.0.1
-category: CI

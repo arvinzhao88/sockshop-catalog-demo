@@ -1,47 +1,50 @@
-.catalog:
-    name: "CICD"
-    version: "v0.0.1"
-    description: "A POC project for CICD based on Rancher"
-    minimum_rancher_version: v1.2.0
-
-core:
-  scale: 1
-  start_on_create: true
-
-ui:
-  scale: 1
-  start_on_create: true
-
-lb:
-  scale: 1
-  start_on_create: true
-  lb_config:
-    certs: []
-    port_rules:
-    - path: /api
-      priority: 1
-      protocol: http
-      service: core
-      source_port: 9090
-      target_port: 8080
-    - path: ''
-      priority: 2
-      protocol: http
-      service: ui
-      source_port: 9090
-      target_port: 80
-  health_check:
-    healthy_threshold: 2
-    response_timeout: 2000
-    port: 42
-    unhealthy_threshold: 3
-    interval: 2000
-    strategy: recreate
-
-jenkins:
-  scale: 1
-  start_on_create: true
-
-mysql:
-  scale: 1
-  start_on_create: true
+version: '2'
+services:
+  zipkin:
+    scale: 1
+    start_on_create: true
+  catalogue-db:
+    scale: 1
+    start_on_create: true
+  edge-router:
+    scale: 1
+    start_on_create: true
+  carts-db:
+    scale: 1
+    start_on_create: true
+  rabbitmq:
+    scale: 1
+    start_on_create: true
+  catalogue:
+    scale: 1
+    start_on_create: true
+  orders-db:
+    scale: 1
+    start_on_create: true
+  queue-master:
+    scale: 1
+    start_on_create: true
+  carts:
+    scale: 1
+    start_on_create: true
+  shipping:
+    scale: 1
+    start_on_create: true
+  user-sim:
+    scale: 1
+    start_on_create: true
+  user-db:
+    scale: 1
+    start_on_create: true
+  orders:
+    scale: 1
+    start_on_create: true
+  payment:
+    scale: 1
+    start_on_create: true
+  front-end:
+    scale: 1
+    start_on_create: true
+  user:
+    scale: 1
+    start_on_create: true
