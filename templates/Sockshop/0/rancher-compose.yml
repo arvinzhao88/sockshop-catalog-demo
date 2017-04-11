@@ -1,3 +1,8 @@
+.catalog:
+    name: "Scok shop"
+    version: "v0.0.1"
+    description: "A POC demo on Rancher"
+    minimum_rancher_version: v1.2.0
 version: '2'
 services:
   zipkin:
